@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id" data-tema="terang">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pencatat Pengeluaran</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Library Chart.js untuk membuat grafik lingkaran -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- ==============================
+         HEADER: judul, total, toggle
+         ============================== -->
+    <header class="header">
+      <!-- Tombol gelap/terang di pojok kanan atas -->
+      <button class="btn-tema" id="btnTema" aria-label="Ganti tema">🌙</button>
+
+      <h1 class="app-title">Pencatat Pengeluaran</h1>
+
+      <!-- Kartu total pengeluaran -->
+      <div class="balance-card">
+        <p class="balance-label">Total Pengeluaran</p>
+        <h2 class="balance-amount" id="totalBalance">Rp 0</h2>
+      </div>
+    </header>
+
+    <!-- ==============================
+         KONTEN UTAMA
+         ============================== -->
+    <main class="main">
+
+      <!-- ---- FORMULIR TAMBAH PENGELUARAN ---- -->
+      <section class="card form-card">
+        <h3 class="card-title">Tambah Pengeluaran</h3>
+        <form id="transactionForm" novalidate>
+
+          <!-- Nama Item -->
+          <div class="form-group">
+            <label for="itemName">Nama Item</label>
+            <input type="text" id="itemName" autocomplete="off" />
+            <span class="error-msg" id="nameError">Nama item wajib diisi.</span>
+          </div>
+
+          <!-- Jumlah Uang -->
+          <div class="form-group">
+            <label for="itemAmount">Jumlah (Rp)</label>
+            <input type="number" id="itemAmount" min="1" />
+            <span class="error-msg" id="amountError">Masukkan jumlah yang valid.</span>
+          </div>
+
+          <!-- Kategori (isi dari JS, termasuk kategori kustom) -->
+          <div class="form-group">
+            <label for="itemCategory">Kategori</label>
+            <select id="itemCategory">
+              <option value="">-- Pilih Kategori --</option>
+              <option value="Makanan">🍔 Makanan</option>
+              <option value="Transportasi">🚗 Transportasi</option>
+              <option value="Hiburan">🎉 Hiburan</option>
+            </select>
+            <span class="error-msg" id="categoryError">Pilih salah satu kategori.</span>
+          </div>
+
+          <!-- Tombol submit -->
+          <button type="submit" class="btn-add">+ Tambah Pengeluaran</button>
+        </form>
+
+        <!-- ---- FITUR 1: BATAS PENGELUARAN ---- -->
+        <div class="batas-wrapper">
+          <div class="batas-header">
+            <span class="batas-judul">Batas Limit Pengeluaran</span>
+            <!-- Indikator status: aktif / nonaktif -->
+            <span class="batas-status" id="batasStatus">Nonaktif</span>
+          </div>
+          <p class="batas-hint">
+            Peringatan akan muncul jika total pengeluaran melebihi batas yang kamu tentukan.
+          </p>
+          <!-- Input batas + tombol simpan & reset -->
+          <div class="batas-inputs">
+            <input
+              type="number"
+              id="inputBatas"
+              min="1"
+            />
+            <button class="btn-simpan-batas" id="btnSimpanBatas">Simpan</button>
+            <button class="btn-reset-batas" id="btnResetBatas" title="Hapus batas">✕</button>
+          </div>
+          <!-- Banner peringatan: muncul jika ada transaksi yang melampaui batas -->
+          <div class="batas-alert" id="batasAlert">
+            ⚠ <span id="batasAlertTeks"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- GRAFIK LINGKARAN ---- -->
+      <section class="card chart-card">
+        <h3 class="card-title">Grafik Pengeluaran per Kategori</h3>
+        <div class="chart-wrapper">
+          <canvas id="spendingChart"></canvas>
+          <p class="chart-empty" id="chartEmpty">Belum ada data. Tambahkan pengeluaran untuk melihat grafik.</p>
+        </div>
+      </section>
+
+      <!-- ---- RINGKASAN BULANAN ---- -->
+      <section class="card summary-card">
+        <h3 class="card-title">Ringkasan Bulanan</h3>
+
+        <!-- Pemilih bulan dan tahun -->
+        <div class="summary-filter">
+          <select id="filterBulan"></select>
+          <select id="filterTahun"></select>
+        </div>
+
+        <!-- Statistik total bulan terpilih -->
+        <div class="summary-stats" id="summaryStats">
+          <div class="stat-box">
+            <p class="stat-label">Total Transaksi</p>
+            <p class="stat-value" id="statJumlahTransaksi">0</p>
+          </div>
+          <div class="stat-box">
+            <p class="stat-label">Total Pengeluaran</p>
+            <p class="stat-value" id="statTotalPengeluaran">Rp 0</p>
+          </div>
+          <div class="stat-box">
+            <p class="stat-label">Rata-rata / Transaksi</p>
+            <p class="stat-value" id="statRataRata">Rp 0</p>
+          </div>
+        </div>
+
+        <!-- Rincian per kategori bulan tersebut -->
+        <div class="summary-kategori" id="summaryKategori"></div>
+
+        <!-- Pesan jika bulan terpilih kosong -->
+        <p class="summary-empty" id="summaryEmpty">Tidak ada transaksi pada bulan ini.</p>
+      </section>
+
+      <!-- ---- RIWAYAT TRANSAKSI ---- -->
+      <section class="card list-card">
+        <h3 class="card-title">Riwayat Transaksi</h3>
+        <ul class="transaction-list" id="transactionList">
+          <li class="list-empty" id="listEmpty">Belum ada transaksi.</li>
+        </ul>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- File JavaScript utama aplikasi -->
+  <script src="js/app.js"></script>
+</body>
+</html>
